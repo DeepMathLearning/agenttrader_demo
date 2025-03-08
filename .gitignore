@@ -1,0 +1,6 @@
+*.db
+bot_activity/*
+data/*
+.DS_Store
+__pycahe__
+__pycache__/

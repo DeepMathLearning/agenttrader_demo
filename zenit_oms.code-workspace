@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../git_repo/zenit_oms"
+		},
+		{
+			"path": "../test_bots"
+		}
+	],
+	"settings": {}
+}

@@ -1,0 +1,21 @@
+credentials:
+  usernames:
+    jemirsonramirez:
+      email: jemirson.ramirez@zenitcapital.com
+      name: Jemirson Ramirez
+      password: JRZenit2024 # To be replaced with hashed password
+    zenittest:
+      email: gabriel.santana@zenitcapital.com
+      name: Zenit Test
+      password: ClaveZenit2024! # To be replaced with hashed password
+    admin:
+      email: gabriel.santana@zenitcapital.com
+      name: Zenit Admin
+      password: Zenit2024! # To be replaced with hashed password
+cookie:
+  expiry_days: 1000
+  key: random_signature_key # Must be string
+  name: random_cookie_name
+preauthorized:
+  emails:
+  - gabriel.santana@zenitcapital.com

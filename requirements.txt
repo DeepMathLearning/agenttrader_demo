@@ -1,0 +1,11 @@
+argparse
+logging
+pandas
+numpy
+pytz
+plotly
+yfinance
+ta
+tqdm
+streamlit
+psutil
