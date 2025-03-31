@@ -540,7 +540,7 @@ class Main(Wrapper, Client):
                 break
 
         self.cancelPositions()
-        return self.positions
+        return self.positions1
 
     def error(self, reqId, errorCode, errorString, advancedOrderRejectJson):
         if errorCode not in self.hide_error_codes:
@@ -549,23 +549,73 @@ class Main(Wrapper, Client):
 
 
     def close_all_positions(self, time_out=10):
-        # Request current positions
-        positions = self.get_positions()
+        """Cierra todas las posiciones usando la estructura positions1 actualizada"""
+        try:
+            if not self.positions1:
+                print("No hay posiciones abiertas")
+                return
 
-        for position in positions:
-            position: PositionInfo = position
-            if position.pos != 0:  # If the position size is not 0
-                # Determine the action based on whether position is long (SELL) or short (BUY)
-                action = 'SELL' if position.pos > 0 else 'BUY'
-                
-                # Create a limit order to close the position
-                order = self.market_order(action, abs(position.pos))
-                
-                # Place the order
-                self.placeOrder(self.get_order_id(), position.contract, order)
-                
-        # Allow some time for all orders to be transmitted before ending the function
-        time.sleep(time_out)
+            print("\nIniciando cierre de posiciones...")
+            
+            for account in self.positions1:
+                for symbol in self.positions1[account]:
+                    position_data = self.positions1[account][symbol]
+                    
+                    if position_data["position"] == 0:
+                        continue
+                    
+                    print(f"\nProcesando {symbol}:")
+                    print("Datos de posición:", position_data)
+                    
+                    # Reconstruir contrato desde los datos almacenados
+                    contract_info = position_data["contract"]
+                    contract = Contract()
+                    
+                    # Campos comunes para todos los tipos
+                    contract.secType = contract_info.get("secType", "FUT")
+                    contract.exchange = contract_info.get("exchange", "SMART")
+                    contract.currency = contract_info.get("currency", "USD")
+                    
+                    # Manejo específico para futuros
+                    if contract.secType == "FUT":
+                        contract.symbol = contract_info.get("tradingClass", symbol)
+                        contract.lastTradeDateOrContractMonth = contract_info.get("expiration", "")
+                        contract.multiplier = contract_info.get("multiplier", "")
+                        contract.tradingClass = contract_info.get("tradingClass", symbol)
+                        # Forzar exchange para futuros si es necesario
+                        
+                    else:
+                        contract.symbol = symbol
+                    
+                    # Validación final del exchange
+                    contract.exchange = contract.exchange or "SMART"
+                    
+                    print(f"\nContrato reconstruido: {contract}")
+                    print(f"Símbolo: {contract.symbol}")
+                    print(f"Tipo: {contract.secType}")
+                    print(f"Exchange: {contract.exchange}")
+                    print(f"Expiración: {getattr(contract, 'lastTradeDateOrContractMonth', 'N/A')}")
+                    print(f"Multiplicador: {getattr(contract, 'multiplier', 'N/A')}")
+                    
+                    # Crear y enviar orden
+                    action = "SELL" if position_data["position"] > 0 else "BUY"
+                    quantity = abs(position_data["position"])
+                    
+                    print(f"\nCreando orden: {action} {quantity} {contract.symbol}")
+                    
+                    order = self.market_order(action, float(quantity), account)
+                    order_id = self.get_order_id()
+                    self.placeOrder(order_id, contract, order)
+                    
+                    print(f"Orden {order_id} enviada exitosamente")
+
+            print("\nEsperando ejecución...")
+            time.sleep(time_out)
+            print("Proceso de cierre completado")
+
+        except Exception as e:
+            print(f"\nError crítico: {str(e)}")
+            raise
 
     def stop_loss_order(self, action: str, quantity: int, stop_price: float) -> Order:
         order = Order()
@@ -609,35 +659,51 @@ class Main(Wrapper, Client):
         })
 
     def position(self, account, contract, position, avgCost):
-        
         if contract.secType == 'FUT':
             symbol = contract.tradingClass
+            # Información adicional para futuros
+            contract_info = {
+                'tradingClass': contract.tradingClass,
+                'expiration': contract.lastTradeDateOrContractMonth,
+                'multiplier': contract.multiplier,
+                'exchange': contract.exchange if contract.exchange else 'SMART'
+            }
         else:
             symbol = contract.symbol
+            # Información para otros tipos de contratos
+            contract_info = {
+                'symbol': contract.symbol,
+                'secType': contract.secType,
+                'exchange': contract.exchange if contract.exchange else 'SMART',
+            }
 
-        # Verifica si 'account' existe en self.positions1 y si no, lo inicializa con un diccionario vacío
+        # Mantenemos la estructura original de positions1
         self.positions1.setdefault(account, {})
         
-        # Si no hay posición, establece un diccionario vacío con posición y promedio de costo en cero
+        # Añadimos la información del contrato al diccionario existente
         if position is None:
             self.positions1[account][symbol] = {
                 "position": 0,
-                "averageCost": 0
+                "averageCost": 0,
+                "contract": contract_info  # Nueva clave con la info del contrato
             }
-            self.position1 = position
         else:
             self.positions1[account][symbol] = {
                 "position": position,
-                "averageCost": avgCost
+                "averageCost": avgCost,
+                "contract": contract_info  # Nueva clave con la info del contrato
             }
-            self.position1 = position
-        
-        # Si deseas imprimir información en cualquier caso, puedes hacerlo aquí
+
+        # Mantenemos los prints originales y añadimos información del contrato
         print("Account:", account)
         print("Contract:", contract.symbol)
+        print("Full Contract Info:", contract_info)  # Nuevo print
         print("Position:", position)
         print("Average Cost:", avgCost)
-        print("Dict:", self.position1)
+        print("Dict:", self.positions1[account][symbol])  # Modificado para mostrar estructura completa
+
+        # Mantenemos la referencia original si es necesaria
+        self.position1 = position
 
         
         

@@ -295,6 +295,7 @@ class BotTRENDEMASCLOUD(Main):
         """Calcula segundos hasta la próxima apertura del mercado"""
         ny_time = self.get_ny_time()
         ny_date = ny_time.date()
+        ny_tz = pytz.timezone('America/New_York')
         
         # Si antes de las 8:30 AM, abre hoy
         if ny_time.time() < datetime.time(8, 30):

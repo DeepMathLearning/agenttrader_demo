@@ -194,7 +194,7 @@ class BotZenitCRUCEEMAS(Main):
         elif self.interval == '5m':
             self.DTC = round(self.tick_value * self.USD_5m, 2)
             self.call_down_wait = 7200
-        elif self.interval == '15m':
+        elif self.interval in ['15m', '30m']:
             self.DTC = round((self.tick_value * self.USD_5m * 2), 2)
             self.call_down_wait = 14400
         elif self.interval == '1h':
@@ -253,7 +253,7 @@ class BotZenitCRUCEEMAS(Main):
     def update_smart_interval(self):
         
         if self.smart_interval == 'auto':
-            if self.interval in ['1m','10m', '5m','15m']:
+            if self.interval in ['1m','10m', '5m','15m', '30m']:
                 self.smart_duration_str = "4 D"  
                 self.new_barsize = "1 hour"
             else:
@@ -324,6 +324,49 @@ class BotZenitCRUCEEMAS(Main):
         
         logger.info(f'#-----------------------> POSICION INICIAL {self.cant_cont_init}')
     
+    def get_ny_time(self):
+        """Obtiene la hora actual en Nueva York, manejando automáticamente DST"""
+        ny_tz = pytz.timezone('America/New_York')
+        return datetime.datetime.now(ny_tz)
+
+    def is_market_open(self):
+        """Verifica si el mercado está abierto (8:30 AM - 3:15 PM hora NY)"""
+        ny_time = self.get_ny_time()
+        current_time = ny_time.time()
+        
+        # Horario normal de trading para futuros ES
+        market_open = datetime.time(8, 30)  # 8:30 AM
+        market_close = datetime.time(15, 15)  # 3:15 PM (cierre normal)
+        
+        # Verificar si es un día de semana (lunes a viernes)
+        weekday = ny_time.weekday()  # 0=Lunes, 4=Viernes
+        is_weekday = weekday <= 4
+        
+        return (is_weekday and 
+                market_open <= current_time <= market_close)
+
+    def time_until_open(self):
+        """Calcula segundos hasta la próxima apertura del mercado"""
+        ny_time = self.get_ny_time()
+        ny_date = ny_time.date()
+        ny_tz = pytz.timezone('America/New_York')
+        
+        # Si antes de las 8:30 AM, abre hoy
+        if ny_time.time() < datetime.time(8, 30):
+            next_open = ny_tz.localize(datetime.datetime.combine(ny_date, datetime.time(8, 30)))
+        else:
+            # Encontrar el próximo día hábil
+            days_ahead = 1
+            while True:
+                next_day = ny_date + datetime.timedelta(days=days_ahead)
+                if next_day.weekday() <= 4:  # Lunes a Viernes
+                    break
+                days_ahead += 1
+            next_open = ny_tz.localize(datetime.datetime.combine(next_day, datetime.time(8, 30)))
+        
+        return (next_open - ny_time).total_seconds()
+
+    
     def loop(self, req_id):
 
         if self.fdata is None:
@@ -352,84 +395,96 @@ class BotZenitCRUCEEMAS(Main):
         #self.position_gestion()
         
         while True:
-            
-            while not self.isConnected():
-                logger.info("ESPERANDO CONEXION")
-                self.reconnect()
+            if self.is_market_open():
+                while not self.isConnected():
+                    logger.info("ESPERANDO CONEXION")
+                    self.reconnect()
 
-            self.estrategy_jemir()
-            self.plot_strategy_jemir()
-            self.html_generate() 
-            logger.info(f'-*-**-*-*-*-*-*-*- DATA {self.fdata.tail(5)}')
-            
-            try:
-                # Obtén la hora actual
-                hora_actual = time.localtime()
-                time_part_space = 3600/self.bar_size
-                segundos_actuales = (hora_actual.tm_min * 60) + hora_actual.tm_sec
-                parte_decimal, _ = math.modf((3600 - segundos_actuales) / self.bar_size)
-                segundos_hasta_siguiente_tiempo = int(parte_decimal * self.bar_size)     
+                self.estrategy_jemir()
+                self.plot_strategy_jemir()
+                self.html_generate() 
+                logger.info(f'-*-**-*-*-*-*-*-*- DATA {self.fdata.tail(5)}')
                 
-                if segundos_hasta_siguiente_tiempo > 0:
-                    tiempo_de_espera = min(self.bar_size, segundos_hasta_siguiente_tiempo)
-                else:
-                    tiempo_de_espera = self.bar_size
-                logger.info(f'Esperando {tiempo_de_espera} segundos para agregar precios')
-                for i in tqdm(range(tiempo_de_espera)):
-                    time.sleep(1)
-                    try:
-                        if self.is_paper:
-                            price = (self.market_data[req_id].DelayedBid + self.market_data[req_id].DelayedAsk) / 2
-                            market_price = self.market_data[req_id].DelayedAsk
-                            vol = self.market_data[req_id].DelayedVolume
-                        else:
-                            logger.info('LIVE DATA')
-                            price = (self.market_data[req_id].Bid + self.market_data[req_id].Ask) / 2
-                            market_price = self.market_data[req_id].Ask 
-                            vol = self.market_data[req_id].NotDefined
-                        logger.info(f'PRECIO ------------> ${price}')
-                        logger.info(f'PRECIO DE MERCADO--> ${market_price}')
-                    except TypeError:
-                        logger.info(f"Error TypeError, the price is None")
+                try:
+                    # Obtén la hora actual
+                    hora_actual = time.localtime()
+                    time_part_space = 3600/self.bar_size
+                    segundos_actuales = (hora_actual.tm_min * 60) + hora_actual.tm_sec
+                    parte_decimal, _ = math.modf((3600 - segundos_actuales) / self.bar_size)
+                    segundos_hasta_siguiente_tiempo = int(parte_decimal * self.bar_size)     
                     
-                    if not self.open_position:
-                        if (price > 0):
+                    if segundos_hasta_siguiente_tiempo > 0:
+                        tiempo_de_espera = min(self.bar_size, segundos_hasta_siguiente_tiempo)
+                    else:
+                        tiempo_de_espera = self.bar_size
+                    logger.info(f'Esperando {tiempo_de_espera} segundos para agregar precios')
+                    for i in tqdm(range(tiempo_de_espera)):
+                        time.sleep(1)
+                        try:
+                            if self.is_paper:
+                                price = (self.market_data[req_id].DelayedBid + self.market_data[req_id].DelayedAsk) / 2
+                                market_price = self.market_data[req_id].DelayedAsk
+                                vol = self.market_data[req_id].DelayedVolume
+                            else:
+                                logger.info('LIVE DATA')
+                                price = (self.market_data[req_id].Bid + self.market_data[req_id].Ask) / 2
+                                market_price = self.market_data[req_id].Ask 
+                                vol = self.market_data[req_id].NotDefined
+                            logger.info(f'PRECIO ------------> ${price}')
+                            logger.info(f'PRECIO DE MERCADO--> ${market_price}')
+                        except TypeError:
+                            logger.info(f"Error TypeError, the price is None")
+                        
+                        if not self.open_position:
+                            if (price > 0):
+                                    break
+
+                        if self.open_position:
+                            if (
+                                price < self.open_trade_price
+                                ):
                                 break
 
-                    if self.open_position:
-                        if (
-                            price < self.open_trade_price
-                            ):
-                            break
-
-                        elif (price > self.open_trade_price):
-                            break
-                                
-                new_price_info = self.get_data_today(req_id)
-                new_price_info['Short_Exit'] = 0
-                new_price_info['Open_position'] = 0
-                new_price_info['Close_real_price'] = 0
-                if len(new_price_info) > 0:
-                    
-                    self.fdata = pd.concat([self.fdata,new_price_info])
-                    
-                    self.fdata = self.fdata[~self.fdata.index.duplicated(keep='last')]
-                    #new_price_info.to_csv("prueba_de_data.csv")
-                    
-                    
-                    self.estrategy_jemir()
-
-                    logger.info('CALCULO DE MÉTRICAS ')
-                    logger.info(f'Ultima Vela {self.fdata[-1:].T}')
-                    # if self.time_to_wait >= self.bar_size * 2:
-                    if price > 0:  
-                        self.strategy_metrics_jemir(price, req_id)
+                            elif (price > self.open_trade_price):
+                                break
+                                    
+                    new_price_info = self.get_data_today(req_id)
+                    new_price_info['Short_Exit'] = 0
+                    new_price_info['Open_position'] = 0
+                    new_price_info['Close_real_price'] = 0
+                    if len(new_price_info) > 0:
                         
-                    self.request_firts_position()
-                    logger.info('ANALIZANDO ESTRATEGIA')            
+                        self.fdata = pd.concat([self.fdata,new_price_info])
                         
-            except Exception as e:
-                logger.info(f'{e}')
+                        self.fdata = self.fdata[~self.fdata.index.duplicated(keep='last')]
+                        #new_price_info.to_csv("prueba_de_data.csv")
+                        
+                        
+                        self.estrategy_jemir()
+
+                        logger.info('CALCULO DE MÉTRICAS ')
+                        logger.info(f'Ultima Vela {self.fdata[-1:].T}')
+                        # if self.time_to_wait >= self.bar_size * 2:
+                        if price > 0:  
+                            self.strategy_metrics_jemir(price, req_id)
+                            
+                        self.request_firts_position()
+                        logger.info('ANALIZANDO ESTRATEGIA')            
+                            
+                except Exception as e:
+                    logger.info(f'{e}')
+            else:
+                # Fuera del horario de mercado
+                ny_time = self.get_ny_time()
+                if ny_time.time() > datetime.time(15, 15):
+                    logger.info("Cierre del mercado - Verificando posiciones abiertas")
+                    self.close_all_positions()
+                
+                wait_seconds = self.time_until_open()
+                sleep_time = min(wait_seconds, 3600)  # Revisa cada 1 hora máximo
+                
+                logger.info(f"Mercado cerrado. Próxima apertura en {wait_seconds/3600:.1f} horas")
+                time.sleep(sleep_time)
 
     def time_to_call_down(self, req_id):
         self.estrategy_jemir()
@@ -1740,9 +1795,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--interval', type=str, default='1m', help='Data Time Frame')
     parser.add_argument('--accept_trade', type=str, default='long', help='Type of trades for trading')
-    parser.add_argument('--multiplier', type=str, default="50", help='The multiplier for futures')
+    
     parser.add_argument('--trading_class', type=str, default="ES", help='The trading_class for futures')
-    parser.add_argument('--lastTradeDateOrContractMonth', type=str, default="20240920", help='The expire date for futures')
+    
     parser.add_argument('--order_type', type=str, default="LIMIT", help='The type of the order: LIMIT OR MARKET')
     parser.add_argument('--order_validity', type=str, default="DAY", help='The expiration time of the order: DAY or GTC')
     parser.add_argument('--is_paper', type=str_to_bool, default=False, help='Paper or live trading')
