@@ -1443,7 +1443,7 @@ def execute_in_threads(contracts, sectors, look_back_period, forecast_scalars, e
     return results_df
 
 
-def load_data_from_db(db_name="data/zenit_future_instrument.db", 
+def load_data_from_db(db_name="atws_oms.db", 
                       table_name="closing_prices",
                       last_row=False):
     """
@@ -1483,7 +1483,7 @@ def update_column_value(table_name,
                         column_name, 
                         new_value, 
                         condition,
-                        database_name="data/zenit_future_instrument.db"):
+                        database_name="atws_oms.db"):
     """
     Actualiza una columna en una tabla de la base de datos SQLite.
 
@@ -1581,7 +1581,7 @@ def calculate_date_difference(start_date_str, end_date_str):
         return f"{days_diff} D"
 
 
-def insert_dataframe_to_table(table_name, dataframe, db_name="data/zenit_future_instrument.db"):
+def insert_dataframe_to_table(table_name, dataframe, db_name="atws_oms.db"):
     """
     Insert data from a DataFrame into a specified table in an SQLite database.
     
@@ -1705,7 +1705,7 @@ def create_portafolio_table(username,
                             portfolio_name, 
                             symbols):
     """
-    Crea una tabla `portafolio` en la base de datos `data/zenit_future_instrument.db`
+    Crea una tabla `portafolio` en la base de datos `atws_oms.db`
     y agrega un nuevo portafolio si el nombre no está duplicado para el usuario.
 
     :param username: Nombre del usuario.
@@ -1714,7 +1714,7 @@ def create_portafolio_table(username,
     """
     try:
         # Conectar a la base de datos
-        conn = sqlite3.connect("data/zenit_future_instrument.db")
+        conn = sqlite3.connect("atws_oms.db")
         cursor = conn.cursor()
 
         # Crear la tabla `portafolio` si no existe
@@ -1764,7 +1764,7 @@ def get_user_portfolios(username):
     """
     try:
         # Conectar a la base de datos
-        conn = sqlite3.connect("data/zenit_future_instrument.db")
+        conn = sqlite3.connect("atws_oms.db")
         cursor = conn.cursor()
 
         # Consultar los portafolios del usuario
@@ -1783,7 +1783,7 @@ def get_user_portfolios(username):
 # Función para eliminar un portafolio de la base de datos
 def delete_portfolio(portfolio_name):
     try:
-        conn = sqlite3.connect("data/zenit_future_instrument.db")
+        conn = sqlite3.connect("atws_oms.db")
         cursor = conn.cursor()
 
         cursor.execute("DELETE FROM portafolio WHERE nombre_portafolio = ?", (portfolio_name,))

@@ -31,7 +31,7 @@ options = {
 
 advance_strategy = AdvanceFutureStrategy()
 
-st.set_page_config(page_title="Zenit Micro App", page_icon="📈")
+st.set_page_config(page_title="AgentTrader Micro App", page_icon="📈")
 
 confi = logo_up()
 
@@ -48,8 +48,7 @@ authenticator = stauth.Authenticate(
     config['credentials'],
     config['cookie']['name'],
     config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
+    config['cookie']['expiry_days']
 )
 
 # Creating a login widget

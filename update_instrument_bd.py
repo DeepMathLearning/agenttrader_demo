@@ -17,7 +17,7 @@ def update_expiration(ib, row):
         contracts = ib.reqContractDetails(base_contract)
 
         today = datetime.today()
-        min_date = today + timedelta(days=20)  # Fecha mínima permitida (15 días desde hoy)
+        min_date = today + timedelta(days=1)  # Fecha mínima permitida (15 días desde hoy)
 
         # Filtrar fechas de expiración válidas
         expiration_dates = [
@@ -119,8 +119,8 @@ def update_futures_data(ip,
             # Perform both expiration and price updates
             update_expiration(ib, row)
             
-            ib.connect(ip, port, clientId=datetime.now().microsecond)
-            update_prices(ib, row)
+            # ib.connect(ip, port, clientId=datetime.now().microsecond)
+            # update_prices(ib, row)
         except Exception as e:
             print(f"Error processing {row['broker_symbol']}: {e}")
 
@@ -133,8 +133,8 @@ def update_futures_data(ip,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Actualizar datos de futuros en la base de datos")
     parser.add_argument("--ip", type=str, default="127.0.0.1", help="Dirección IP del servidor TWS/IB Gateway")
-    parser.add_argument("--port", type=int, default=7496, help="Puerto del servidor TWS/IB Gateway")
-    parser.add_argument("--symbols", type=str, default="['ES','NQ']", help="Portfolio Symbol list")
+    parser.add_argument("--port", type=int, default=7497, help="Puerto del servidor TWS/IB Gateway")
+    parser.add_argument("--symbols", type=str, default="['CL','ZL','LE','CT','MBT','MET','NG','ES','GC','PL','VIX']", help="Portfolio Symbol list")
     args = parser.parse_args()
 
     update_futures_data(args.ip, args.port, args.symbols)

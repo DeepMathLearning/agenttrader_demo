@@ -32,11 +32,11 @@ os_platform = platform.platform()
 
 def logo_login():
     # Cargar la imagen (asegúrate de que la imagen esté en el directorio correcto)
-    image = Image.open("./zenit_logo_dor.png")
+    image = Image.open("images/agenttrader.png")
     cl, cl1, cl2= st.columns([4,4,4])
     # Mostrar la imagen en Streamlit
     with cl1:
-        st.image(image, width=200)
+        st.image(image, width=100)
 
 def get_filtered_data_by_symbols(csv_path, symbols):
     # Leer el archivo CSV
@@ -48,14 +48,14 @@ def get_filtered_data_by_symbols(csv_path, symbols):
     return filtered_df
 
 def logo_up():
-    file = open("./zenit_logo_dor.png", "rb")
+    file = open("images/agenttrader.png", "rb")
     contents = file.read()
     img_str = base64.b64encode(contents).decode("utf-8")
     buffer = io.BytesIO()
     file.close()
     img_data = base64.b64decode(img_str)
     img = Image.open(io.BytesIO(img_data))
-    resized_img = img.resize((130, 100))  # x, y
+    resized_img = img.resize((80, 50))  # x, y
     resized_img.save(buffer, format="PNG")
     img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
     return f"""
@@ -118,7 +118,7 @@ def team_made(args,
                 #f"python zenit_TRENDEMASCLOUD_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 1m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade short --hora_ejecucion {args['hora_ejecucion']} --client {id}10",
                 f"python zenit_TRENDEMASCLOUD_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade short --hora_ejecucion {args['hora_ejecucion']} --client {id}11 --smart_interval {smart_interval}",
             ]
-        elif (trade == 'smart') and (a_type != 'live'):
+        elif (trade == 'smart') and (a_type != 'paper'):
             list_command = [
                 # TA Long
                 f"python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 1m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}2 --with_trend_study True --smart_interval {smart_interval}",
@@ -148,25 +148,25 @@ def team_made(args,
                 f"python zenit_strategy_bot.py --ip {args['ip']} --accept_trade ab --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 15m --quantity {quantity} --account {args['account']} --port {args['port']} --hora_ejecucion {args['hora_ejecucion']} --client {id}7 --with_trend_study True --smart_interval {smart_interval}"
             ]
             
-        elif (trade == 'smart') and (a_type == 'live'):
+        elif (trade == 'smart') and (a_type == 'paper'):
             list_command = [
                 # TA Long
-                f"python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 1m --quantity 3 --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}2 --with_trend_study True --smart_interval {smart_interval}",
-                f"python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 5m --quantity 3 --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}3 --with_trend_study True --smart_interval {smart_interval}",
+                f"python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper True --interval 1m --quantity 3 --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}2 --with_trend_study True --smart_interval {smart_interval}",
+                f"python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper True --interval 5m --quantity 3 --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}3 --with_trend_study True --smart_interval {smart_interval}",
 
                 # TREND EMAS CLOUD Long
                 #f"python zenit_TRENDEMASCLOUD_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 1m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}4 --with_trend_study True",
-                f"python zenit_TRENDEMASCLOUD_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}5 --with_trend_study True --smart_interval {smart_interval}",
+                f"python zenit_TRENDEMASCLOUD_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper True --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}5 --with_trend_study True --smart_interval {smart_interval}",
                 
                 # TEND MASTER Long
-                f"python zenit_strategy_bot.py --ip {args['ip']} --accept_trade ab --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --hora_ejecucion {args['hora_ejecucion']} --client {id}6 --with_trend_study True --smart_interval {smart_interval}",
-                f"python zenit_strategy_bot.py --ip {args['ip']} --accept_trade ab --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 15m --quantity {quantity} --account {args['account']} --port {args['port']} --hora_ejecucion {args['hora_ejecucion']} --client {id}7 --with_trend_study True --smart_interval {smart_interval}"
+                f"python zenit_strategy_bot.py --ip {args['ip']} --accept_trade ab --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper True --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --hora_ejecucion {args['hora_ejecucion']} --client {id}6 --with_trend_study True --smart_interval {smart_interval}",
+                f"python zenit_strategy_bot.py --ip {args['ip']} --accept_trade ab --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper True --interval 15m --quantity {quantity} --account {args['account']} --port {args['port']} --hora_ejecucion {args['hora_ejecucion']} --client {id}7 --with_trend_study True --smart_interval {smart_interval}"
             ]
         elif (trade == 'smart_ta'):
             list_command = [
                 # TA Long
                 #f'''python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 1m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}2 --with_trend_study True --smart_interval {smart_interval}''',
-                f'''python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper False --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}3 --with_trend_study True --smart_interval {smart_interval}'''
+                f'''python zenit_CRUCEEMAS_strategy.py --ip {args['ip']} --symbol {df_sym_info['symbol_ib']} --exchange {df_sym_info['exchange']} --secType {df_sym_info['secType']} --trading_class {symbol} --multiplier {df_sym_info['Multiplier']} --lastTradeDateOrContractMonth {df_sym_info['ContractMonth']} --is_paper True --interval 5m --quantity {quantity} --account {args['account']} --port {args['port']} --accept_trade {trade} --hora_ejecucion {args['hora_ejecucion']} --client {id}3 --with_trend_study True --smart_interval {smart_interval}'''
             ]
         elif (trade == 'smart_trend') :
             if a_type == 'live':
@@ -402,30 +402,45 @@ def run_custom_commands_single(commands):
     processes = load_processes() + new_processes
     save_processes(processes)
 
+import platform
+
 def run_command(cmd):
-    os_platform = os.uname().sysname
-    if 'Windows' in os_platform:
-        process = subprocess.Popen(cmd,
-                                   shell=True,
-                                   creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
-                                   text=True)
+    # Detección multiplataforma del sistema operativo
+    is_windows = platform.system() == 'Windows'
+    
+    if is_windows:
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+            text=True
+        )
     else:
-        process = subprocess.Popen(cmd,
-                                   shell=True,
-                                   preexec_fn=os.setsid,
-                                   text=True)
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            preexec_fn=os.setsid,
+            text=True
+        )
+    
     time.sleep(3)
     
+    # Verificación de proceso multiplataforma
     pid = process.pid
     try:
-        os.killpg(os.getpgid(pid), 0)
+        if is_windows:
+            # En Windows verificamos si el proceso sigue activo
+            process.send_signal(signal.CTRL_BREAK_EVENT)
+        else:
+            os.killpg(os.getpgid(pid), 0)
         pid_exists = True
-    except:
+    except (OSError, AttributeError):
         pid_exists = False
 
     if not pid_exists:
         raise RuntimeError(f"Error: el proceso con PID {pid} no se pudo iniciar correctamente.")
 
+    # Resto del código original...
     args = extract_args(cmd)
     if "zenit_TRENDEMASCLOUD_strategy.py" in cmd:
         args['strategy'] = "TREND_EMAS_CLOUD"
@@ -590,7 +605,7 @@ def run_bot(strategy, kwargs):
     bot.main()
 
 
-@st.experimental_dialog("Bot Activity", width="large")
+@st.dialog("Bot Activity", width="large")
 def bot_activity(html_link):
     try:
         with open(html_link, 'r', encoding='utf-8') as open_html:
@@ -855,7 +870,7 @@ def teams_commands(args, team, df_symbols_editable):
 
 
 
-def fetch_all_records(db_name='zenit_oms.db'):
+def fetch_all_records(db_name='atws_oms.db'):
     conn = sqlite3.connect(db_name)
     df = pd.read_sql_query('SELECT * FROM activity', conn)
     conn.close()
@@ -913,7 +928,7 @@ def calculate_trade_metrics(df):
     
     return pd.DataFrame(trade_metrics)
 
-@st.experimental_dialog("Calendario", width="large")
+@st.dialog("Calendario", width="large")
 def calendar_events_create(df, mode, calendar_options):
     df['time_modify'] = list(map(lambda x: str(x).replace(' ', 'T').replace('+00:00', ''), df['time']))
     
@@ -1069,3 +1084,4 @@ def generar_simbolo_futuro(simbolo, month, fecha_contrato):
     futuro = simbolo + codigo_mes + year[-1]
 
     return futuro
+

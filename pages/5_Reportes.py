@@ -119,8 +119,7 @@ authenticator = stauth.Authenticate(
     config['credentials'],
     config['cookie']['name'],
     config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
+    config['cookie']['expiry_days']
 )
 
 # Creating a login widget
@@ -135,7 +134,7 @@ if st.session_state["authentication_status"]:
     if st.button('Actualizar página'):
         st.rerun()
     # Page title
-    st.title('📊 Reporte de trades de los bots - Zenit')
+    st.title('📊 Reporte de trades de los bots')
     with st.sidebar:
         st.write(f'**Usuario**: *{st.session_state["name"]}*')
         authenticator.logout()

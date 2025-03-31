@@ -21,7 +21,7 @@ today_str_date = datetime.now().date().strftime("%Y%m%d")
 symbol_info = load_data_from_db(db_name="data/zenit_future_instrument.db",
                                table_name="general_futures_info_carver")
 
-st.set_page_config(page_title='Zenit Trading System', page_icon='💸')
+st.set_page_config(page_title='Trading System', page_icon='💸')
 
 if "show_table" not in st.session_state:
     st.session_state["show_table"] = False  # Inicializar show_table
@@ -46,8 +46,7 @@ authenticator = stauth.Authenticate(
     config['credentials'],
     config['cookie']['name'],
     config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
+    config['cookie']['expiry_days']
 )
 
 # Creating a login widget

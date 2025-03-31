@@ -29,8 +29,7 @@ authenticator = stauth.Authenticate(
     config['credentials'],
     config['cookie']['name'],
     config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
+    config['cookie']['expiry_days']
 )
 
 # Creating a login widget
@@ -47,7 +46,7 @@ if st.session_state["authentication_status"]:
         authenticator.logout()
         st.markdown("---")
     #st.set_page_config(page_title='Calendario economico - Zenit', page_icon='📆')
-    st.title('📆 Calendario Económico - Zenit')
+    st.title('📆 Calendario Económico - AgentTrader')
 
     # Incluir el iframe de Investing.com
     html_code = """
